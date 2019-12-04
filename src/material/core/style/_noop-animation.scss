@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
 // If the mat-animation-noop class is present on the components root element,
 // prevent non css animations from running.
 // NOTE: Currently this mixin should only be used with components that do not

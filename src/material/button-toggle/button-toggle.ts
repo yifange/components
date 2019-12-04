@@ -219,7 +219,7 @@ export class MatButtonToggleGroup implements ControlValueAccessor, OnInit, After
         defaultOptions?: MatButtonToggleDefaultOptions) {
 
       this.appearance =
-          defaultOptions && defaultOptions.appearance ? defaultOptions.appearance : 'standard';
+          defaultOptions && defaultOptions.appearance ? defaultOptions.appearance : 'legacy';
     }
 
   ngOnInit() {
@@ -498,7 +498,7 @@ export class MatButtonToggle extends _MatButtonToggleMixinBase implements OnInit
     this.tabIndex = (parsedTabIndex || parsedTabIndex === 0) ? parsedTabIndex : null;
     this.buttonToggleGroup = toggleGroup;
     this.appearance =
-        defaultOptions && defaultOptions.appearance ? defaultOptions.appearance : 'standard';
+        defaultOptions && defaultOptions.appearance ? defaultOptions.appearance : 'legacy';
   }
 
   ngOnInit() {

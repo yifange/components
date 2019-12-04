@@ -9,7 +9,7 @@
 import {HighContrastModeDetector} from '@angular/cdk/a11y';
 import {BidiModule} from '@angular/cdk/bidi';
 import {Inject, InjectionToken, isDevMode, NgModule, Optional, Version} from '@angular/core';
-import {VERSION as CDK_VERSION} from '@angular/cdk';
+const CDK_VERSION = new Version('0.0.0-PLACEHOLDER');
 
 
 // Private version constant to circumvent test/build issues,

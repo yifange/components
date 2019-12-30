@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
 import {CdkCellDef, CdkColumnDef, CdkHeaderCellDef, CdkTable} from '@angular/cdk/table';
 import {
   Component,
@@ -41,6 +49,7 @@ import {CdkSelection} from './selection';
   `,
 })
 export class CdkSelectionColumn<T> implements OnInit, OnDestroy {
+  /** Column name that should be used to reference this column. */
   @Input()
   get cdkSelectionColumnName(): string {
     return this._name;
@@ -58,10 +67,14 @@ export class CdkSelectionColumn<T> implements OnInit, OnDestroy {
 
   constructor(
       @Optional() private table: CdkTable<T>,
-      readonly selection: CdkSelection<T>,
+      @Optional() readonly selection: CdkSelection<T>,
   ) {}
 
   ngOnInit() {
+    if (!this.selection) {
+      throw new Error('CdkSelectionColumn: missing CdkSelection in the parent');
+    }
+
     this.syncColumnDefName();
 
     if (this.table) {
@@ -69,7 +82,7 @@ export class CdkSelectionColumn<T> implements OnInit, OnDestroy {
       this._columnDef.headerCell = this._headerCell;
       this.table.addColumnDef(this._columnDef);
     } else {
-      throw new Error('missing parent table');
+      throw new Error('CdkSelectionColumn: missing parent table');
     }
   }
 

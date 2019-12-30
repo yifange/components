@@ -12,34 +12,20 @@ import {ReplaySubject} from 'rxjs';
 export class CdkSelectionListExample implements OnDestroy {
   private readonly destroyed$ = new ReplaySubject(1);
 
-  data = [
-    'Hydrogen',   'Helium',   'Lithium',  'Beryllium', 'Boron',     'Carbon',   'Nitrogen',
-    'Oxygen',     'Fluorine', 'Neon',     'Sodium',    'Magnesium', 'Aluminum', 'Silicon',
-    'Phosphorus', 'Sulfur',   'Chlorine', 'Argon',     'Potassium', 'Calcium',
-  ];
+  data = ELEMENT_NAMES;
 
-  symbols = [
-    'H',  'He', 'Li', 'Be', 'B', 'C', 'N',  'O',  'F', 'Ne',
-    'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca'
-  ];
-
-  selectionSet1 = new Set<string>();
-  selectionSet2 = new Set<string>();
-  selectionSet3 = new Set<string>();
+  selected1: string[] = [];
+  selected2: string[] = [];
+  selected3: string[] = [];
+  selected4: string[] = [];
 
   ngOnDestroy() {
     this.destroyed$.next();
     this.destroyed$.complete();
   }
 
-  selectionChanged(event: SelectionChange<string>, selectionSet: Set<string>) {
-    for (const added of event.added || []) {
-      selectionSet.add(added.value);
-    }
-
-    for (const removed of event.removed || []) {
-      selectionSet.delete(removed.value);
-    }
+  getCurrentSelected(event: SelectionChange<string>) {
+    return event.after.map((select) => select.value);
   }
 
   trackByFn(index: number, value: string) {
@@ -47,6 +33,21 @@ export class CdkSelectionListExample implements OnDestroy {
   }
 
   changeElementName() {
-    this.data = this.symbols;
+    this.data = ELEMENT_SYMBOLS;
+  }
+
+  reset() {
+    this.data = ELEMENT_NAMES;
   }
 }
+
+const ELEMENT_NAMES = [
+  'Hydrogen',   'Helium',   'Lithium',  'Beryllium', 'Boron',     'Carbon',   'Nitrogen',
+  'Oxygen',     'Fluorine', 'Neon',     'Sodium',    'Magnesium', 'Aluminum', 'Silicon',
+  'Phosphorus', 'Sulfur',   'Chlorine', 'Argon',     'Potassium', 'Calcium',
+];
+
+const ELEMENT_SYMBOLS = [
+  'H',  'He', 'Li', 'Be', 'B', 'C', 'N',  'O',  'F', 'Ne',
+  'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca'
+];

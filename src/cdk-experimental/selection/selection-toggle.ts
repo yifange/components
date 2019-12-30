@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
 import {Directive, Inject, Input, OnDestroy, OnInit, Optional, Self} from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {BehaviorSubject, of as observableOf, Subject} from 'rxjs';
@@ -20,6 +28,7 @@ import {CdkSelection} from './selection';
   exportAs: 'cdkSelectionToggle',
 })
 export class CdkSelectionToggle<T> implements OnDestroy, OnInit {
+  /** The value that is associated with the toggle */
   @Input()
   get cdkSelectionToggleValue(): T {
     return this._value;
@@ -29,6 +38,7 @@ export class CdkSelectionToggle<T> implements OnDestroy, OnInit {
   }
   private _value: T;
 
+  /** The index of the value in the list. Required when used with `trackBy` */
   @Input()
   get cdkSelectionToggleIndex(): number|undefined {
     return this._index;
@@ -38,17 +48,27 @@ export class CdkSelectionToggle<T> implements OnDestroy, OnInit {
   }
   private _index?: number;
 
-  private _destroyed$ = new Subject();
-
+  /** The checked state of the selection toggle */
   readonly checked$ = new BehaviorSubject<boolean>(false);
 
+  /** Toggles the selection */
+  toggle() {
+    this._selection.toggleSelection(this._value, this._index);
+  }
+
+  private _destroyed$ = new Subject();
+
   constructor(
-      private _selection: CdkSelection<T>,
+      @Optional() private _selection: CdkSelection<T>,
       @Optional() @Self() @Inject(NG_VALUE_ACCESSOR) private _controlValueAccessors:
           ControlValueAccessor[],
   ) {}
 
   ngOnInit() {
+    if (!this._selection) {
+      throw new Error('CdkSelectAll: missing CdkSelection in the parent');
+    }
+
     if (this._controlValueAccessors && this._controlValueAccessors.length) {
       this._controlValueAccessors[0].registerOnChange((e: unknown) => {
         if (typeof e === 'boolean') {
@@ -76,10 +96,6 @@ export class CdkSelectionToggle<T> implements OnDestroy, OnInit {
   ngOnDestroy() {
     this._destroyed$.next();
     this._destroyed$.complete();
-  }
-
-  toggle() {
-    this._selection.toggleSelection(this._value, this._index);
   }
 
   private _isSelected(): boolean {

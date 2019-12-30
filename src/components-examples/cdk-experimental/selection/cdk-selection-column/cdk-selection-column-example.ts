@@ -15,7 +15,7 @@ export class CdkSelectionColumnExample implements OnDestroy {
 
   displayedColumns: string[] = ['select', 'position', 'name', 'weight', 'symbol'];
   dataSource = ELEMENT_DATA;
-  selectionSet = new Set<string>();
+  selected: string[] = [];
 
   ngOnDestroy() {
     this.destroyed$.next();
@@ -23,13 +23,7 @@ export class CdkSelectionColumnExample implements OnDestroy {
   }
 
   selectionChanged(event: SelectionChange<PeriodicElement>) {
-    for (const added of event.added || []) {
-      this.selectionSet.add(added.value.name);
-    }
-
-    for (const removed of event.removed || []) {
-      this.selectionSet.delete(removed.value.name);
-    }
+    this.selected = event.after.map((select) => select.value.name);
   }
 }
 

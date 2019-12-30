@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
 import {Directive, Inject, OnDestroy, OnInit, Optional, Self} from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {BehaviorSubject, of as observableOf, Subject} from 'rxjs';
@@ -20,17 +28,54 @@ import {CdkSelection} from './selection';
   exportAs: 'cdkSelectAll',
 })
 export class CdkSelectAll<T> implements OnDestroy, OnInit {
-  private readonly _destroyed$ = new Subject();
-
+  /**
+   * The checked state of the toggle.
+   * Resolves to `true` if all the values are selected, `false` if no value is selected.
+   */
   readonly checked$ = new BehaviorSubject(false);
+
+  /**
+   * The indeterminate state of the toggle.
+   * Resolves to `true` if part (not all) of the values are selected, `false` if all values or no
+   * value at all are selected.
+   */
   readonly indeterminate$ = new BehaviorSubject(false);
 
+  /**
+   * Toggles the select-all state.
+   * @param event The click event if the toggle is triggered by a (mouse or keyboard) click. If
+   *     using with a native <input type="checkbox">, the parameter is required for the
+   *     indeterminate state to work properly.
+   */
+  toggle(event?: MouseEvent) {
+    // This is needed when applying the directive on a native <input type="checkbox">
+    // checkbox. The default behavior needs to be prevented in order to support the indeterminate
+    // state. The timeout is also needed so the checkbox can show the latest state.
+    if (event) {
+      event.preventDefault();
+    }
+
+    setTimeout(() => {
+      this._selection.toggleSelectAll();
+    });
+  }
+
+  private readonly _destroyed$ = new Subject();
+
   constructor(
-      private readonly _selection: CdkSelection<T>,
+      @Optional() private readonly _selection: CdkSelection<T>,
       @Optional() @Self() @Inject(NG_VALUE_ACCESSOR) private readonly _controlValueAccessor:
           ControlValueAccessor[]) {}
 
   ngOnInit() {
+    if (!this._selection) {
+      throw new Error('CdkSelectAll: missing CdkSelection in the parent');
+    }
+
+    if (!this._selection.cdkSelectionMultiple) {
+      throw new Error('CdkSelectAll: CdkSelection must have cdkSelectionMultiple set to true');
+    }
+
     this._selection.cdkSelectionChange
         .pipe(
             switchMap(() => observableOf(this._selection.isAllSelected())),
@@ -65,18 +110,5 @@ export class CdkSelectAll<T> implements OnDestroy, OnInit {
   ngOnDestroy() {
     this._destroyed$.next();
     this._destroyed$.complete();
-  }
-
-  toggle(event?: Event) {
-    // This is needed when applying the directive on a native <input type="checkbox">
-    // checkbox. The default behavior needs to be prevented in order to support the indeterminate state.
-    // The timeout is also needed so the checkbox can show the latest state.
-    if (event) {
-      event.preventDefault();
-    }
-
-    setTimeout(() => {
-      this._selection.toggleSelectAll();
-    });
   }
 }

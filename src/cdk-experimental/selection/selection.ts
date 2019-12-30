@@ -1,3 +1,12 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+import {coerceBooleanProperty} from '@angular/cdk/coercion';
 import {CollectionViewer, DataSource, isDataSource, ListRange} from '@angular/cdk/collections';
 import {
   AfterContentChecked,
@@ -47,21 +56,23 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
   }
   private _trackByFn: TrackByFunction<T>;
 
+  /** Whether to support multiple selection */
   @Input()
   get cdkSelectionMultiple(): boolean {
     return this._multiple;
   }
   set cdkSelectionMultiple(multiple: boolean) {
-    this._multiple = multiple;
+    this._multiple = coerceBooleanProperty(multiple);
   }
   private _multiple: boolean;
 
+  /** Emits when selection changes. */
   @Output() cdkSelectionChange = new EventEmitter<SelectionChange<T>>();
 
   /** Latest data provided by the data source. */
   private _data: T[]|readonly T[];
 
-  /** Subscription that listens fo rthe data provided by the data source.  */
+  /** Subscription that listens for the data provided by the data source.  */
   private _renderChangeSubscription: Subscription|null;
 
   private _destroyed$ = new ReplaySubject<void>(1);
@@ -109,7 +120,7 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
   }
 
   ngOnInit() {
-    this._selection = new SelectionSet<T>(this._trackByFn);
+    this._selection = new SelectionSet<T>(this._multiple, this._trackByFn);
     this._selection.changed$.pipe(takeUntil(this._destroyed$)).subscribe((change) => {
       this.updateSelectAllState();
       this.cdkSelectionChange.emit(change);
@@ -131,7 +142,12 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
     }
   }
 
+  /** Toggles selection for a given value. `index` is required if `trackBy` is used. */
   toggleSelection(value: T, index?: number) {
+    if (this.trackBy && index == null) {
+      throw new Error('CdkSelection: index required when trackBy is used');
+    }
+
     if (this.isSelected(value, index)) {
       this._selection.deselect({value, index});
     } else {
@@ -139,9 +155,13 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
     }
   }
 
+  /**
+   * Toggles select-all. If no value is selected, select all values. If all values or some of the
+   * values are selected, de-select all values.
+   */
   toggleSelectAll() {
     if (!this._multiple) {
-      return;
+      throw new Error('CdkSelection: multiple selection not enabled');
     }
 
     if (this.selectAllState === 'none') {
@@ -151,14 +171,21 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
     }
   }
 
+  /** Checks whether a value is selected. `index` is required if `trackBy` is used. */
   isSelected(value: T, index?: number) {
+    if (this.trackBy && index == null) {
+      throw new Error('CdkSelection: index required when trackBy is used');
+    }
+
     return this._selection.isSelected({value, index});
   }
 
+  /** Checks whether all values are selected. */
   isAllSelected() {
     return this._data.every((value, index) => this._selection.isSelected({value, index}));
   }
 
+  /** Checks whether partially selected. */
   isPartialSelected() {
     return !this.isAllSelected() &&
         this._data.some((value, index) => this._selection.isSelected({value, index}));

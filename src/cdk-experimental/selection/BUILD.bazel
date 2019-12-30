@@ -13,7 +13,9 @@ ng_module(
     deps = [
         "//src/cdk/coercion",
         "//src/cdk/collections",
+        "//src/cdk/table",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
         "@npm//rxjs",
     ],
 )
@@ -49,4 +51,3 @@ e2e_test_suite(
         "//src/cdk/testing/private/e2e",
     ],
 )
-

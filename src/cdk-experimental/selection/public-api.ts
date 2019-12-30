@@ -6,5 +6,9 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-export * from './public-api';
-
+export * from './selection';
+export * from './select-all';
+export * from './selection-toggle';
+export * from './selection-column';
+export * from './row-selection';
+export * from './selection-module';

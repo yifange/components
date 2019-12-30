@@ -9,12 +9,21 @@ import {
   Output,
   TrackByFunction
 } from '@angular/core';
-import {Observable, of as observableOf, Subscription} from 'rxjs';
+import {Observable, of as observableOf, ReplaySubject, Subscription} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
+import {SelectableWithIndex, SelectionChange, SelectionSet} from './selection-set';
+
+/**
+ * Manages the selection states of the items and provides methods to check and update the selection
+ * states.
+ * It must be applied to the parent element if `cdkSelectionToggle`, `cdkSelectAll`,
+ * `cdkRowSelection` and `cdkSelectionColumn` are applied.
+ */
 @Directive({
-  selector: '[cdkSelection]', exportAs: 'cdkSelection',
-}
+  selector: '[cdkSelection]',
+  exportAs: 'cdkSelection',
+})
 export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionViewer, OnDestroy {
   viewChange: Observable<ListRange>;
 
@@ -49,13 +58,13 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
 
   @Output() cdkSelectionChange = new EventEmitter<SelectionChange<T>>();
 
-  /** Latest data provided byt he data source. */
-  private _data: T[]|ReadonlyArray<T>;
+  /** Latest data provided by the data source. */
+  private _data: T[]|readonly T[];
 
   /** Subscription that listens fo rthe data provided by the data source.  */
   private _renderChangeSubscription: Subscription|null;
 
-  private _destroyed$ = new Subject<void>();
+  private _destroyed$ = new ReplaySubject<void>(1);
 
   private _selection: SelectionSet<T>;
 
@@ -135,8 +144,8 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
       return;
     }
 
-    if (this.selectAllState === 'none' || this.selectAllState === 'partial') {
-      this.toggleSelectAll();
+    if (this.selectAllState === 'none') {
+      this.selectAll();
     } else {
       this.clearAll();
     }
@@ -156,12 +165,20 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
   }
 
   private selectAll() {
-    const toSelect = this._data.map((value, index) => ({value, index}));
+    const toSelect: Array<SelectableWithIndex<T>> = [];
+    this._data.forEach((value, index) => {
+      toSelect.push({value, index});
+    });
+
     this._selection.select(...toSelect);
   }
 
   private clearAll() {
-    const toDeselect = this._data.map((value, index) => ({value, index}));
+    const toDeselect: Array<SelectableWithIndex<T>> = [];
+    this._data.forEach((value, index) => {
+      toDeselect.push({value, index});
+    });
+
     this._selection.deselect(...toDeselect);
   }
 
@@ -178,6 +195,5 @@ export class CdkSelection<T> implements OnInit, AfterContentChecked, CollectionV
   selectAllState: SelectAllState = 'none';
 }
 
-
-type SelectAllState = 'all' | 'none' | 'partial';
-type TableDataSource<T> = DataSource<T> | Observable<ReadonlyArray<T> | T[]> | ReadonlyArray<T> | T[];
+type SelectAllState = 'all'|'none'|'partial';
+type TableDataSource<T> = DataSource<T>|Observable<ReadonlyArray<T>|T[]>|ReadonlyArray<T>|T[];
